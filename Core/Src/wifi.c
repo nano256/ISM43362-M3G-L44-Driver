@@ -104,3 +104,48 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buff
 WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
 	return WIFI_OK;
 }
+
+
+/**
+  * @brief  Trims a given character from beginning and end of a c string.
+  * @param  str: C string
+  * @param  strSize: C string size
+  * @param  size: Character to trim
+  * @retval None
+  */
+
+void trimstr(uint8_t* str, uint32_t strSize, uint8_t c){
+
+	uint32_t trimPos = 0;
+	uint32_t endPos = 0;
+
+	// Find end of string a.k.a. first occurrence of '\0'
+	for(uint32_t i = 0; i < strSize; i++){
+		if( str[i] != '\0' ) continue;
+		else{
+			endPos = i;
+			break;
+		}
+	}
+
+	/**
+	 * If c is at the end of the string, replace it with '\0'.
+	 * Repeat until a char emerges that is not c.
+	 */
+	for(uint32_t i = endPos -1; i > 0; i--){
+		if( str[i] == c ){
+			str[i] = '\0';
+			endPos = i;
+		}
+		else break;
+	}
+
+	// Find the position of the first char in the string that is not c.
+	for(uint32_t i = 0; i < strSize; i++){
+		if(str[i] == c){
+			trimPos = i + 1;
+		}else break;
+	}
+	// Trim leading c
+	snprintf( str, endPos + 1 - trimPos, &str[trimPos] );
+}
