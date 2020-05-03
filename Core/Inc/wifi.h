@@ -11,17 +11,16 @@
 #include "stm32l4xx_hal.h"
 #include "main.h"
 
-
+#define WIFI_TIMEOUT_TIME 5000
 #define WIFI_TX_BUFFER_SIZE 1024
 #define WIFI_RX_BUFFER_SIZE 1024
-#define WIFI_TIMEOUT 5000
+
 #define WIFI_MSG_OK "\r\n\r\nOK\r\n> "
 
 #define WIFI_RESET_MODULE()                 HAL_GPIO_WritePin(WIFI_RESET_GPIO_Port, WIFI_RESET_Pin, GPIO_PIN_RESET );\
                                             HAL_Delay(10);\
                                             HAL_GPIO_WritePin( WIFI_RESET_GPIO_Port, WIFI_RESET_Pin, GPIO_PIN_SET );\
                                             HAL_Delay(500);
-
 
 
 #define WIFI_ENABLE_NSS()                   HAL_GPIO_WritePin( WIFI_NSS_GPIO_Port, WIFI_NSS_Pin, GPIO_PIN_RESET );\
@@ -39,6 +38,14 @@
 
 uint8_t wifiTxBuffer[WIFI_TX_BUFFER_SIZE];
 uint8_t wifiRxBuffer[WIFI_RX_BUFFER_SIZE];
+
+typedef enum
+{
+  WIFI_OK		= HAL_OK,
+  WIFI_ERROR	= HAL_ERROR,
+  WIFI_BUSY		= HAL_BUSY,
+  WIFI_TIMEOUT  = HAL_TIMEOUT,
+} WIFI_StatusTypeDef;
 
 typedef enum
 {
@@ -78,14 +85,14 @@ typedef struct
   uint8_t RemoteIpAddress[17];
 } WIFI_HandleTypeDef;
 
-HAL_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
-HAL_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
-HAL_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi);
-HAL_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* hCmd, uint16_t sizeCmd, uint8_t* hRx, uint16_t sizeRx);
-HAL_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi);
-HAL_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
-HAL_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
-HAL_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* hCmd, uint16_t sizeCmd, uint8_t* hRx, uint16_t sizeRx);
+WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
 
 
 #endif /* INC_WIFI_H_ */
