@@ -13,6 +13,7 @@
 
 #define WIFI_TX_PADDING (char) 0x0A
 #define WIFI_RX_PADDING (char) 0x15
+#define WIFI_MSG_POWERUP "\r\n> "
 #define WIFI_MSG_OK "\r\n\r\nOK\r\n> "
 #define WIFI_MSG_START "\r\n[SOMA]"
 #define WIFI_MSG_END "[EOMA]\r\nOK\r\n>"

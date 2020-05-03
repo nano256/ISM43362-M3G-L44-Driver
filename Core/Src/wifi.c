@@ -67,6 +67,18 @@ WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer,
   */
 
 WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
+
+	WIFI_RESET_MODULE();
+	WIFI_ENABLE_NSS();
+
+	while(!WIFI_IS_CMDDATA_READY());
+
+	WIFI_SPI_Receive(hwifi, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	if( strcmp(wifiRxBuffer, WIFI_MSG_POWERUP) ) Error_Handler();
+
+	WIFI_ENABLE_NSS();
+
 	return WIFI_OK;
 }
 
