@@ -2,6 +2,9 @@
 #define INC_WIFI_H_
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include <string.h>
+
 #include "stm32l4xx_hal.h"
 #include "main.h"
 
@@ -11,8 +14,8 @@
 #define WIFI_TX_BUFFER_SIZE 1024
 #define WIFI_RX_BUFFER_SIZE 1024
 
-#define WIFI_TX_PADDING (char) 0x0A
-#define WIFI_RX_PADDING (char) 0x15
+#define WIFI_TX_PADDING (uint8_t) 0x0A
+#define WIFI_RX_PADDING (uint8_t) 0x15
 #define WIFI_MSG_POWERUP "\r\n> "
 #define WIFI_MSG_OK "\r\n\r\nOK\r\n> "
 #define WIFI_MSG_START "\r\n[SOMA]"

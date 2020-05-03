@@ -22,7 +22,6 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
 		// Fill buffer as long there is still space
 		if ( (cnt > (size - 2)) || (HAL_SPI_Receive(hwifi->handle , buffer + cnt, 1, WIFI_TIMEOUT) != HAL_OK) )
 		  {
-			WIFI_DISABLE_NSS();
 			Error_Handler();
 		  }
 		cnt+=2;
@@ -56,7 +55,7 @@ WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer,
 		Error_Handler();
 	  }
 
-	return HAL_OK;
+	return WIFI_OK;
 }
 
 
