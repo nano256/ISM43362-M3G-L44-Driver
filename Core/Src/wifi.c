@@ -13,6 +13,24 @@
   */
 
 WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
+
+	uint16_t cnt = 0;
+	memset(buffer, '\0', size); // Erase buffer
+
+	while (WIFI_IS_CMDDATA_READY())
+	{
+		// Fill buffer as long there is still space
+		if ( (cnt > (size - 2)) || (HAL_SPI_Receive(hwifi->handle , buffer + cnt, 1, WIFI_TIMEOUT) != HAL_OK) )
+		  {
+			WIFI_DISABLE_NSS();
+			Error_Handler();
+		  }
+		cnt+=2;
+	}
+
+	// Trim padding chars from data
+	trimstr(buffer, size, WIFI_RX_PADDING);
+
 	return WIFI_OK;
 }
 
@@ -27,7 +45,18 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
   */
 
 WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
-	return WIFI_OK;
+
+	uint8_t bTx[((size)/2)*2 + 1]; // Make a buffer that has an even amount of bytes
+	snprintf( bTx, size, buffer ); // Copy buffer in bTx
+
+	if ( !(size % 2) ) strcat(bTx, WIFI_TX_PADDING); // If buffer had an odd amount of bytes, append a filler char to bTx
+
+	if (HAL_SPI_Transmit(hwifi->handle, bTx, size/2, WIFI_TIMEOUT) != HAL_OK) // size must be halved since 16bits are sent via SPI
+	  {
+		Error_Handler();
+	  }
+
+	return HAL_OK;
 }
 
 
