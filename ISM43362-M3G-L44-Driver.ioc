@@ -1,6 +1,5 @@
 #MicroXplorer Configuration settings - do not modify
 File.Version=6
-GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false
 Mcu.Family=STM32L4
 Mcu.IP0=NVIC
@@ -142,8 +141,8 @@ RCC.VCOInputFreq_Value=4000000
 RCC.VCOOutputFreq_Value=160000000
 RCC.VCOSAI1OutputFreq_Value=96000000
 RCC.VCOSAI2OutputFreq_Value=32000000
-SPI3.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_8
-SPI3.CalculateBaudRate=10.0 MBits/s
+SPI3.BaudRatePrescaler=SPI_BAUDRATEPRESCALER_16
+SPI3.CalculateBaudRate=5.0 MBits/s
 SPI3.DataSize=SPI_DATASIZE_16BIT
 SPI3.Direction=SPI_DIRECTION_2LINES
 SPI3.IPParameters=VirtualType,Mode,Direction,CalculateBaudRate,DataSize,BaudRatePrescaler

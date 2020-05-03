@@ -31,8 +31,6 @@
 debug/
 
 # Eclipse CDT project files
-.cproject
-.project
 .settings/
 
 # Include makefiles
