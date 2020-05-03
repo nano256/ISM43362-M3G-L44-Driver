@@ -73,7 +73,7 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
 
 	while(!WIFI_IS_CMDDATA_READY());
 
-	WIFI_SPI_Receive(hwifi, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+	if(WIFI_SPI_Receive(hwifi, wifiRxBuffer, WIFI_RX_BUFFER_SIZE) != WIFI_OK) Error_Handler();
 
 	if( strcmp(wifiRxBuffer, WIFI_MSG_POWERUP) ) Error_Handler();
 
