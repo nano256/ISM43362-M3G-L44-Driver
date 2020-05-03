@@ -95,6 +95,25 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
   */
 
 WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* bCmd, uint16_t sizeCmd, uint8_t* bRx, uint16_t sizeRx){
+
+	while(!WIFI_IS_CMDDATA_READY());
+
+	WIFI_ENABLE_NSS();
+
+	if(WIFI_SPI_Transmit(hwifi, bCmd, sizeCmd) != WIFI_OK) Error_Handler();
+
+	WIFI_DISABLE_NSS();
+
+	while(!WIFI_IS_CMDDATA_READY());
+
+	WIFI_ENABLE_NSS();
+
+	if(WIFI_SPI_Receive(hwifi, bRx, sizeRx) != WIFI_OK) Error_Handler();
+
+	if(WIFI_IS_CMDDATA_READY()) Error_Handler(); // If CMDDATA_READY is still high, then the buffer is too small for the data
+
+	WIFI_DISABLE_NSS();
+
 	return WIFI_OK;
 }
 
