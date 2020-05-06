@@ -76,7 +76,7 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
 
 	if( strcmp(wifiRxBuffer, WIFI_MSG_POWERUP) ) Error_Handler();
 
-	WIFI_ENABLE_NSS();
+	WIFI_DISABLE_NSS();
 
 	return WIFI_OK;
 }
