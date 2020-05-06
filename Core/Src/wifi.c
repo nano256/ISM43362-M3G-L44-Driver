@@ -39,13 +39,13 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
   * 		reads from buffer.
   * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
   * @param  buffer: A char buffer, where the data to be sent is saved in.
-  * @param  size: Buffer size
+  * @param  size: Buffer size (including \0, so it is compatible with sizeof())
   * @retval WIFI_StatusTypeDef
   */
 
 WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
 
-	uint8_t bTx[((size)/2)*2 + 1]; // Make a buffer that has an even amount of bytes
+	uint8_t bTx[(size/2)*2 + 1]; // Make a buffer that has an even amount of bytes (even is meant for the chars excluding \0)
 	snprintf( bTx, size, buffer ); // Copy buffer in bTx
 
 	if ( !(size % 2) ) strcat(bTx, WIFI_TX_PADDING); // If buffer had an odd amount of bytes, append a filler char to bTx
@@ -125,6 +125,42 @@ WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* bCmd, 
 
 
 WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
+
+	int msgLength = 0;
+	uint8_t* ipStart;
+	uint8_t* ipEnd;
+
+	// The msgLength+1 is because sprintf only returns string length without counting \0
+
+	// Activate the soft access point
+	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "A1=%d\r", hwifi->securityType);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set AP security key
+	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "A2=%s\r", hwifi->passphrase);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set AP SSID
+	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "AS=0,%s\r", hwifi->ssid);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Activate AP direct mode
+	msgLength = sprintf(wifiTxBuffer,"%s", (uint8_t*) "AD\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Get AP info
+	msgLength = sprintf(wifiTxBuffer,"A?");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Get the position of the IP address
+	ipStart = strstr(wifiRxBuffer, ",") + 1;
+	ipStart = strstr(ipStart, ",") + 1;
+	ipEnd = strstr(ipStart, "\r");
+
+	// Save IP address in the Wifi handle
+	memset(hwifi->ipAddress, '\0', sizeof(hwifi->ipAddress));
+	snprintf(hwifi->ipAddress, ipEnd - ipStart + 1, ipStart);
+
 	return WIFI_OK;
 }
 
