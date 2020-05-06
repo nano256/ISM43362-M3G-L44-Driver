@@ -12,7 +12,7 @@
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
 
 	uint16_t cnt = 0;
 	memset(buffer, '\0', size); // Erase buffer
@@ -20,7 +20,7 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
 	while (WIFI_IS_CMDDATA_READY())
 	{
 		// Fill buffer as long there is still space
-		if ( (cnt > (size - 2)) || (HAL_SPI_Receive(hwifi->handle , buffer + cnt, 1, WIFI_TIMEOUT) != HAL_OK) )
+		if ( (cnt > (size - 2)) || (HAL_SPI_Receive(hwifi->handle , (uint8_t*) buffer + cnt, 1, WIFI_TIMEOUT) != HAL_OK) )
 		  {
 			Error_Handler();
 		  }
@@ -28,7 +28,7 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
 	}
 
 	// Trim padding chars from data
-	trimstr(buffer, size, WIFI_RX_PADDING);
+	trimstr(buffer, size, (char) WIFI_RX_PADDING);
 
 	return WIFI_OK;
 }
@@ -43,14 +43,14 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
 
-	uint8_t bTx[(size/2)*2 + 1]; // Make a buffer that has an even amount of bytes (even is meant for the chars excluding \0)
+	char bTx[(size/2)*2 + 1]; // Make a buffer that has an even amount of bytes (even is meant for the chars excluding \0)
 	snprintf( bTx, size, buffer ); // Copy buffer in bTx
 
-	if ( !(size % 2) ) strcat(bTx, WIFI_TX_PADDING); // If buffer had an odd amount of bytes, append a filler char to bTx
+	if ( !(size % 2) ) strcat(bTx, (char) WIFI_TX_PADDING); // If buffer had an odd amount of bytes, append a filler char to bTx
 
-	if (HAL_SPI_Transmit(hwifi->handle, bTx, size/2, WIFI_TIMEOUT) != HAL_OK) // size must be halved since 16bits are sent via SPI
+	if (HAL_SPI_Transmit(hwifi->handle, (uint8_t*)bTx, size/2, WIFI_TIMEOUT) != HAL_OK) // size must be halved since 16bits are sent via SPI
 	  {
 		Error_Handler();
 	  }
@@ -93,7 +93,7 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* bCmd, uint16_t sizeCmd, uint8_t* bRx, uint16_t sizeRx){
+WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, char* bCmd, uint16_t sizeCmd, char* bRx, uint16_t sizeRx){
 
 	while(!WIFI_IS_CMDDATA_READY());
 
@@ -127,29 +127,29 @@ WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* bCmd, 
 WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
 
 	int msgLength = 0;
-	uint8_t* ipStart;
-	uint8_t* ipEnd;
+	char* ipStart;
+	char* ipEnd;
 
 	// The msgLength+1 is because sprintf only returns string length without counting \0
 
 	// Activate the soft access point
-	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "A1=%d\r", hwifi->securityType);
+	msgLength = sprintf(wifiTxBuffer, "A1=%d\r", hwifi->securityType);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Set AP security key
-	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "A2=%s\r", hwifi->passphrase);
+	msgLength = sprintf(wifiTxBuffer, "A2=%s\r", hwifi->passphrase);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Set AP SSID
-	msgLength = sprintf(wifiTxBuffer, (uint8_t*) "AS=0,%s\r", hwifi->ssid);
+	msgLength = sprintf(wifiTxBuffer, "AS=0,%s\r", hwifi->ssid);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Activate AP direct mode
-	msgLength = sprintf(wifiTxBuffer,"%s", (uint8_t*) "AD\r");
+	msgLength = sprintf(wifiTxBuffer, "%s", "AD\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Get AP info
-	msgLength = sprintf(wifiTxBuffer,"A?\r");
+	msgLength = sprintf(wifiTxBuffer, "A?\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Get the position of the IP address
@@ -183,7 +183,7 @@ WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi){
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
 	return WIFI_OK;
 }
 
@@ -195,7 +195,7 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buff
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
 	return WIFI_OK;
 }
 
@@ -208,7 +208,7 @@ WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer
   * @retval None
   */
 
-void trimstr(uint8_t* str, uint32_t strSize, uint8_t c){
+void trimstr(char* str, uint32_t strSize, char c){
 
 	uint32_t trimPos = 0;
 	uint32_t endPos = 0;
