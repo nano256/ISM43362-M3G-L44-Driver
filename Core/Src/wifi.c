@@ -22,7 +22,6 @@ WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, 
 		// Fill buffer as long there is still space
 		if ( (cnt > (size - 2)) || (HAL_SPI_Receive(hwifi->handle , buffer + cnt, 1, WIFI_TIMEOUT) != HAL_OK) )
 		  {
-			WIFI_DISABLE_NSS();
 			Error_Handler();
 		  }
 		cnt+=2;
@@ -56,7 +55,7 @@ WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer,
 		Error_Handler();
 	  }
 
-	return HAL_OK;
+	return WIFI_OK;
 }
 
 
@@ -73,11 +72,11 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
 
 	while(!WIFI_IS_CMDDATA_READY());
 
-	WIFI_SPI_Receive(hwifi, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+	if(WIFI_SPI_Receive(hwifi, wifiRxBuffer, WIFI_RX_BUFFER_SIZE) != WIFI_OK) Error_Handler();
 
 	if( strcmp(wifiRxBuffer, WIFI_MSG_POWERUP) ) Error_Handler();
 
-	WIFI_ENABLE_NSS();
+	WIFI_DISABLE_NSS();
 
 	return WIFI_OK;
 }
@@ -95,6 +94,25 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
   */
 
 WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* bCmd, uint16_t sizeCmd, uint8_t* bRx, uint16_t sizeRx){
+
+	while(!WIFI_IS_CMDDATA_READY());
+
+	WIFI_ENABLE_NSS();
+
+	if(WIFI_SPI_Transmit(hwifi, bCmd, sizeCmd) != WIFI_OK) Error_Handler();
+
+	WIFI_DISABLE_NSS();
+
+	while(!WIFI_IS_CMDDATA_READY());
+
+	WIFI_ENABLE_NSS();
+
+	if(WIFI_SPI_Receive(hwifi, bRx, sizeRx) != WIFI_OK) Error_Handler();
+
+	if(WIFI_IS_CMDDATA_READY()) Error_Handler(); // If CMDDATA_READY is still high, then the buffer is too small for the data
+
+	WIFI_DISABLE_NSS();
+
 	return WIFI_OK;
 }
 

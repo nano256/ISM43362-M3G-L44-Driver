@@ -28,7 +28,8 @@
 *.map
 *.m
 *.png
-debug/
+Debug/
+*.launch
 
 # Eclipse CDT project files
 .settings/
