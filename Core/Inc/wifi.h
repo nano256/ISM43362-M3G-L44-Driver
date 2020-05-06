@@ -14,8 +14,8 @@
 #define WIFI_TX_BUFFER_SIZE 1024
 #define WIFI_RX_BUFFER_SIZE 1024
 
-#define WIFI_TX_PADDING (uint8_t) 0x0A
-#define WIFI_RX_PADDING (uint8_t) 0x15
+#define WIFI_TX_PADDING 0x0A
+#define WIFI_RX_PADDING 0x15
 #define WIFI_MSG_POWERUP "\r\n> "
 #define WIFI_MSG_OK "\r\n\r\nOK\r\n> "
 #define WIFI_MSG_START "\r\n[SOMA]"
@@ -42,8 +42,8 @@
 
 
 /* Variables -----------------------------------------------------------------*/
-uint8_t wifiTxBuffer[WIFI_TX_BUFFER_SIZE];
-uint8_t wifiRxBuffer[WIFI_RX_BUFFER_SIZE];
+char wifiTxBuffer[WIFI_TX_BUFFER_SIZE];
+char wifiRxBuffer[WIFI_RX_BUFFER_SIZE];
 
 
 /* Structs and Enums ---------------------------------------------------------*/
@@ -84,27 +84,27 @@ typedef enum {
 typedef struct
 {
   SPI_HandleTypeDef* handle;
-  uint8_t* ssid;
-  uint8_t* passphrase;
+  char* ssid;
+  char* passphrase;
   WIFI_SecurityTypeTypeDef securityType;
   FlagStatus DHCP;
   WIFI_IPVersionTypeDef ipStatus;
-  uint8_t ipAddress[17];
-  uint8_t RemoteIpAddress[17];
+  char ipAddress[17];
+  char RemoteIpAddress[17];
 } WIFI_HandleTypeDef;
 
 
 /* Prototypes ----------------------------------------------------------------*/
-WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
-WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
 WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi);
-WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, uint8_t* hCmd, uint16_t sizeCmd, uint8_t* hRx, uint16_t sizeRx);
+WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, char* hCmd, uint16_t sizeCmd, char* hRx, uint16_t sizeRx);
 WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
-WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
-WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, uint8_t* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
 
-void trimstr(uint8_t* str, uint32_t strSize, uint8_t c);
+void trimstr(char* str, uint32_t strSize, char c);
 
 
 #endif /* INC_WIFI_H_ */
