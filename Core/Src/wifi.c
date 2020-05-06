@@ -149,13 +149,12 @@ WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Get AP info
-	msgLength = sprintf(wifiTxBuffer,"A?");
+	msgLength = sprintf(wifiTxBuffer,"A?\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Get the position of the IP address
 	ipStart = strstr(wifiRxBuffer, ",") + 1;
-	ipStart = strstr(ipStart, ",") + 1;
-	ipEnd = strstr(ipStart, "\r");
+	ipEnd = strstr(ipStart, ",");
 
 	// Save IP address in the Wifi handle
 	memset(hwifi->ipAddress, '\0', sizeof(hwifi->ipAddress));
