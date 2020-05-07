@@ -74,12 +74,7 @@ typedef enum
 typedef enum {
   WIFI_TCP_PROTOCOL = 0,
   WIFI_UDP_PROTOCOL = 1,
-}WIFI_Protocol_t;
-
-typedef enum {
-  WIFI_SERVER = 0,
-  WIFI_CLIENT = 1,
-}WIFI_Type_t;
+}WIFI_TransportProtocolTypeDef;
 
 typedef struct
 {
@@ -89,6 +84,8 @@ typedef struct
   WIFI_SecurityTypeTypeDef securityType;
   FlagStatus DHCP;
   WIFI_IPVersionTypeDef ipStatus;
+  WIFI_TransportProtocolTypeDef transportProtocol;
+  uint16_t port;
   char ipAddress[17];
   char RemoteIpAddress[17];
 } WIFI_HandleTypeDef;

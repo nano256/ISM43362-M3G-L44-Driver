@@ -171,6 +171,19 @@ WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
   */
 
 WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi){
+
+	// Set communication socket
+	msgLength = sprintf(wifiTxBuffer, "P0=0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set transport protocol
+	msgLength = sprintf(wifiTxBuffer, "P1=%d\r", hwifi->transportProtocol);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set transport protocol
+	msgLength = sprintf(wifiTxBuffer, "P2=%d\r", hwifi->port);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
 	return WIFI_OK;
 }
 
