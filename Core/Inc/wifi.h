@@ -13,6 +13,10 @@
 #define WIFI_TIMEOUT_TIME 5000
 #define WIFI_TX_BUFFER_SIZE 1024
 #define WIFI_RX_BUFFER_SIZE 1024
+#define WIFI_MAX_READ_PACKET_SIZE 1200
+#define WIFI_READ_PACKET_SIZE ( WIFI_MAX_READ_PACKET_SIZE > WIFI_RX_BUFFER_SIZE ? WIFI_RX_BUFFER_SIZE : WIFI_MAX_READ_PACKET_SIZE )
+#define WIFI_READ_TIMEOUT 2000
+#define WIFI_POLLING_DELAY 200
 
 #define WIFI_TX_PADDING 0x0A
 #define WIFI_RX_PADDING 0x15
@@ -20,6 +24,7 @@
 #define WIFI_MSG_OK "\r\n\r\nOK\r\n> "
 #define WIFI_MSG_START "\r\n[SOMA]"
 #define WIFI_MSG_END "[EOMA]\r\nOK\r\n>"
+#define WIFI_MSG_EMPTY "\r\n[SOMA][EOMA]\r\nOK\r\n> "
 
 /* Macros --------------------------------------------------------------------*/
 #define WIFI_RESET_MODULE()                 HAL_GPIO_WritePin(WIFI_RESET_GPIO_Port, WIFI_RESET_Pin, GPIO_PIN_RESET );\
@@ -98,8 +103,8 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_SendATCommand(WIFI_HandleTypeDef* hwifi, char* hCmd, uint16_t sizeCmd, char* hRx, uint16_t sizeRx);
 WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
-WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
-WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
+WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
 
 void trimstr(char* str, uint32_t strSize, char c);
 

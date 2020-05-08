@@ -1,5 +1,6 @@
 /* Includes ------------------------------------------------------------------*/
 #include "wifi.h"
+#include "helper_functions.h"
 
 
 
@@ -67,6 +68,8 @@ WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, char* buffer, ui
 
 WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
 
+	int msgLength = 0;
+
 	WIFI_RESET_MODULE();
 	WIFI_ENABLE_NSS();
 
@@ -77,6 +80,15 @@ WIFI_StatusTypeDef WIFI_Init(WIFI_HandleTypeDef* hwifi){
 	if( strcmp(wifiRxBuffer, WIFI_MSG_POWERUP) ) Error_Handler();
 
 	WIFI_DISABLE_NSS();
+
+
+	msgLength = sprintf(wifiTxBuffer, "Z3=0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, WIFI_TX_BUFFER_SIZE, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	msgLength = sprintf(wifiTxBuffer, "Z0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, WIFI_TX_BUFFER_SIZE, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+	printf("Answer reset:\n %s", wifiRxBuffer);
+
 
 	return WIFI_OK;
 }
@@ -145,7 +157,7 @@ WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Activate AP direct mode
-	msgLength = sprintf(wifiTxBuffer, "%s", "AD\r");
+	msgLength = sprintf(wifiTxBuffer, "AD\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Get AP info
@@ -172,6 +184,13 @@ WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi){
 
 WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi){
 
+	int msgLength = 0;
+
+
+	// Set TCP keep alive
+	msgLength = sprintf(wifiTxBuffer, "PK=1,3000\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
 	// Set communication socket
 	msgLength = sprintf(wifiTxBuffer, "P0=0\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
@@ -180,8 +199,8 @@ WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi){
 	msgLength = sprintf(wifiTxBuffer, "P1=%d\r", hwifi->transportProtocol);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
-	// Set transport protocol
-	msgLength = sprintf(wifiTxBuffer, "P2=%d\r", hwifi->port);
+	// Set port
+	msgLength = sprintf(wifiTxBuffer, "P2=%u\r", hwifi->port);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	return WIFI_OK;
@@ -189,14 +208,66 @@ WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi){
 
 
 /**
-  * @brief  Checks web server for incoming connections
+  * @brief  Checks web server for incoming connections and calls the request
+  * 		handler when a request was received.
   * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
-  * @param  buffer: A char buffer, where the received data will be saved in.
-  * @param  size: Buffer size
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi){
+
+	int msgLength = 0;
+
+	// Start web server
+	msgLength = sprintf(wifiTxBuffer, "P5=1\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set read packet size
+	msgLength = sprintf(wifiTxBuffer, "R1=%d\r", WIFI_READ_PACKET_SIZE);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set read timeout
+	msgLength = sprintf(wifiTxBuffer, "R2=%d\r", WIFI_READ_TIMEOUT);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Poll as long until a transport request arrives
+	while(1){
+		do{
+			// delay so the Wifi module is not blocked by the polling
+			WIFI_DELAY(WIFI_POLLING_DELAY);
+			// Read messages
+			msgLength = sprintf(wifiTxBuffer, "MR\r");
+			WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+		}while(!strcmp(WIFI_MSG_OK, wifiRxBuffer) || !strcmp(WIFI_MSG_EMPTY, wifiRxBuffer));
+
+		// Check the received message
+		if(strstr(wifiRxBuffer, "Accepted") != 0){
+			break;
+		}
+		else if(strstr(wifiRxBuffer, "ERROR") != 0){
+			Error_Handler();
+		}
+		else{
+			continue;
+		}
+	}
+
+	// Read received data
+	msgLength = sprintf(wifiTxBuffer, "R0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Call request handler
+	strcpy(wifiTxBuffer,wifiRxBuffer);
+	WIFI_WebServerHandleRequest(hwifi, wifiTxBuffer, WIFI_TX_BUFFER_SIZE, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Send response
+	msgLength = sprintf(wifiTxBuffer, "S3=%d\r%s", strlen(wifiRxBuffer), wifiRxBuffer);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Stop web server
+	msgLength = sprintf(wifiTxBuffer, "P5=0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
 	return WIFI_OK;
 }
 
@@ -208,7 +279,7 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi, char* buffer,
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_WebServerSend(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size){
+WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes){
 	return WIFI_OK;
 }
 
