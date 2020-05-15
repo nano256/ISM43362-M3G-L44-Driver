@@ -93,6 +93,9 @@ typedef struct
   uint16_t port;
   char ipAddress[17];
   char RemoteIpAddress[17];
+  char networkMask[17];
+  char defaultGateway[17];
+  char primaryDNSServer[17];
 } WIFI_HandleTypeDef;
 
 
@@ -105,6 +108,7 @@ WIFI_StatusTypeDef WIFI_CreateNewNetwork(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
+WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi);
 
 void trimstr(char* str, uint32_t strSize, char c);
 
