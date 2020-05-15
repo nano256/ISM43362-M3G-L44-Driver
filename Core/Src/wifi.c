@@ -274,8 +274,10 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi){
 /**
   * @brief  Checks web server for incoming connections
   * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
-  * @param  buffer: A char buffer, where the data to be sent is saved in.
-  * @param  size: Buffer size
+  * @param  req: A char buffer, where the HTTP request to the server is contained.
+  * @param  sizeReq: Request buffer size
+  * @param  res: A char buffer, where the response to the request is written in.
+  * @param  sizeRes: Response buffer size
   * @retval WIFI_StatusTypeDef
   */
 
