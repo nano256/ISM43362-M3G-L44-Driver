@@ -274,15 +274,89 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi){
 /**
   * @brief  Checks web server for incoming connections
   * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
-  * @param  buffer: A char buffer, where the data to be sent is saved in.
-  * @param  size: Buffer size
+  * @param  req: A char buffer, where the HTTP request to the server is contained.
+  * @param  sizeReq: Request buffer size
+  * @param  res: A char buffer, where the response to the request is written in.
+  * @param  sizeRes: Response buffer size
   * @retval WIFI_StatusTypeDef
   */
 
-WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes){
+__weak WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes){
 	return WIFI_OK;
 }
 
+/**
+  * @brief  Joins an existing Network using the network configuration in
+  * 		the Wifi handle.
+  * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
+  * @retval WIFI_StatusTypeDef
+  */
+
+WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi){
+
+	int msgLength = 0;
+
+	// Set SSID
+	msgLength = sprintf(wifiTxBuffer, "C1=%s\r", hwifi->ssid);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set passphrase
+	msgLength = sprintf(wifiTxBuffer, "C2=%s\r", hwifi->passphrase);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set security type
+	msgLength = sprintf(wifiTxBuffer, "C3=%d\r", hwifi->securityType);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set if IP is requested via DHCP
+	msgLength = sprintf(wifiTxBuffer, "C4=%d\r", hwifi->DHCP);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// If DHCP is not used, set the additionally needed configurations
+	if(hwifi->DHCP != SET){
+
+		// Set module's IP address
+		msgLength = sprintf(wifiTxBuffer, "C6=%s\r", hwifi->ipAddress);
+		WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+		// Set module's network mask
+		msgLength = sprintf(wifiTxBuffer, "C7=%s\r", hwifi->networkMask);
+		WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+		// Set module's default gateway
+		msgLength = sprintf(wifiTxBuffer, "C8=%s\r", hwifi->defaultGateway);
+		WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+		// Set module's primary DNS server
+		msgLength = sprintf(wifiTxBuffer, "C9=%s\r", hwifi->primaryDNSServer);
+		WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	}
+
+	// Join the network
+	msgLength = sprintf(wifiTxBuffer, "C0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// If there was an error, call the error handler
+	if(strstr(wifiRxBuffer, "ERROR") != NULL) Error_Handler();
+
+	// If the module's IP address was assigned by DHCP, then parse it
+	// from the response and save it in the Wifi handle.
+	if(hwifi->DHCP == SET){
+		// The IP address is between the first and second comma
+		char* startPos = strstr(wifiRxBuffer, ",");
+		char* endPos = strstr(startPos+1, ",");
+
+		// Check whether the commas have been found
+		if(startPos == NULL || endPos == NULL) Error_Handler();
+
+		// Copy the IP address from the response buffer into the Wifi handle
+		// For n set IP_length+1, because the ending char \0 must be considered
+		snprintf(hwifi->ipAddress, endPos - startPos, startPos+1);
+	}
+
+	return WIFI_OK;
+}
 
 /**
   * @brief  Trims a given character from beginning and end of a c string.
