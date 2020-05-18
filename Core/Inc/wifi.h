@@ -109,6 +109,9 @@ WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
 WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_ClientInit(WIFI_HandleTypeDef* hwifi,char* hostAddr);
+WIFI_StatusTypeDef WIFI_SendClientData(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_ClientPrepareData(WIFI_HandleTypeDef* hwifi, char* res, uint16_t sizeRes);
 
 void trimstr(char* str, uint32_t strSize, char c);
 
