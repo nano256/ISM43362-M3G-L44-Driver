@@ -395,7 +395,58 @@ WIFI_StatusTypeDef WIFI_MQTTClientInit(WIFI_HandleTypeDef* hwifi){
 	}
 
 	// Set keep alive time
-	msgLength = sprintf(wifiTxBuffer, "PM=6,%s\r", hwifi->mqtt.keepAlive);
+	msgLength = sprintf(wifiTxBuffer, "PM=6,%u\r", hwifi->mqtt.keepAlive);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set communication socket
+	msgLength = sprintf(wifiTxBuffer, "P0=0\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set transport protocol
+	msgLength = sprintf(wifiTxBuffer, "P1=%d\r", WIFI_MQTT_PROTOCOL);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set port
+	msgLength = sprintf(wifiTxBuffer, "P2=%u\r", hwifi->port);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set remote IP
+	msgLength = sprintf(wifiTxBuffer, "D0=%s\r", hwifi->remoteIpAddress);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set read packet size
+	msgLength = sprintf(wifiTxBuffer, "R1=%d\r", WIFI_READ_PACKET_SIZE);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Set read timeout
+	msgLength = sprintf(wifiTxBuffer, "R2=%d\r", WIFI_READ_TIMEOUT);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	return WIFI_OK;
+}
+
+/**
+  * @brief  Builds up a connection with the MQTT server and publishes a message.
+  * @param  hwifi: Wifi handle, which decides which Wifi instance is used.
+  * @param  message: A char buffer, where the message is contained.
+  * @param  sizeMessage: Message buffer size.
+  * @retval WIFI_StatusTypeDef
+  */
+
+WIFI_StatusTypeDef WIFI_MQTTPublish(WIFI_HandleTypeDef* hwifi, char* message, uint16_t sizeMessage){
+
+	int msgLength = 0;
+
+	// Start client connection
+	msgLength = sprintf(wifiTxBuffer, "P6=1\r");
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Send response
+	msgLength = sprintf(wifiTxBuffer, "S3=%d\r%s", strlen(message), message);
+	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
+
+	// Stop client connection
+	msgLength = sprintf(wifiTxBuffer, "P6=0\r");
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	return WIFI_OK;

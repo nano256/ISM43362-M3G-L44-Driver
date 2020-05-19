@@ -110,8 +110,9 @@ typedef struct
   WIFI_IPVersionTypeDef ipStatus;
   WIFI_TransportProtocolTypeDef transportProtocol;
   uint16_t port;
+  uint16_t remotePort;
   char ipAddress[17];
-  char RemoteIpAddress[17];
+  char remoteIpAddress[17];
   char networkMask[17];
   char defaultGateway[17];
   char primaryDNSServer[17];
