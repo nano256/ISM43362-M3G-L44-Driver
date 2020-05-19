@@ -78,7 +78,10 @@ typedef enum
 
 typedef enum {
   WIFI_TCP_PROTOCOL = 0,
-  WIFI_UDP_PROTOCOL = 1,
+  WIFI_UDP_PROTOCOL,
+  WIFI_UDP_LITE_PROTOCOL,
+  WIFI_TCP_SSL_PROTOCOL,
+  WIFI_MQTT_PROTOCOL
 }WIFI_TransportProtocolTypeDef;
 
 typedef struct
@@ -98,7 +101,7 @@ typedef struct
   char primaryDNSServer[17];
 } WIFI_HandleTypeDef;
 
-
+d
 /* Prototypes ----------------------------------------------------------------*/
 WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
 WIFI_StatusTypeDef WIFI_SPI_Transmit(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
