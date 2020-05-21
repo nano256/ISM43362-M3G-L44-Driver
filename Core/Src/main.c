@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "wifi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,6 +33,10 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define TX_BUFFER_SIZE 1024
+#define RX_BUFFER_SIZE 1024
+#define TX_TIMEOUT 2000
+#define RX_TIMEOUT 2000
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -46,7 +50,15 @@ SPI_HandleTypeDef hspi3;
 UART_HandleTypeDef huart1;
 
 /* USER CODE BEGIN PV */
+uint8_t txBuffer[TX_BUFFER_SIZE];
+uint8_t rxBuffer[RX_BUFFER_SIZE];
 
+WIFI_HandleTypeDef hwifi;
+
+char ssid[] = "HSPP";
+char passphrase[] = "michel11";
+
+__IO FlagStatus cmdDataReady = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -55,7 +67,7 @@ static void MX_GPIO_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void WIFI_Init_main(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,6 +106,10 @@ int main(void)
   MX_SPI3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  WIFI_Init_main();
+
+  WIFI_JoinNetwork(&hwifi);
 
   /* USER CODE END 2 */
 
@@ -263,13 +279,38 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : WIFI_CMD_DATA_READY_Pin */
   GPIO_InitStruct.Pin = WIFI_CMD_DATA_READY_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(WIFI_CMD_DATA_READY_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
 
 }
 
 /* USER CODE BEGIN 4 */
+
+static void WIFI_Init_main(){
+
+	hwifi.handle = &hspi3;
+	hwifi.ssid = ssid;
+	hwifi.passphrase = passphrase;
+	hwifi.securityType = WPA_MIXED;
+	hwifi.DHCP = SET;
+	hwifi.ipStatus = IP_V4;
+	hwifi.transportProtocol = WIFI_TCP_PROTOCOL;
+	hwifi.port = 8080;
+
+	WIFI_Init(&hwifi);
+}
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
+
+	if(GPIO_Pin == WIFI_CMD_DATA_READY_Pin){
+		cmdDataReady = HAL_GPIO_ReadPin(WIFI_CMD_DATA_READY_GPIO_Port, WIFI_CMD_DATA_READY_Pin);
+	}
+}
 
 /* USER CODE END 4 */
 

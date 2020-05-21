@@ -130,7 +130,6 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
 WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_MQTTClientInit(WIFI_HandleTypeDef* hwifi);
-
 void trimstr(char* str, uint32_t strSize, char c);
 
 
