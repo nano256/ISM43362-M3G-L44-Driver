@@ -411,7 +411,7 @@ WIFI_StatusTypeDef WIFI_MQTTClientInit(WIFI_HandleTypeDef* hwifi){
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Set remote IP
-	msgLength = sprintf(wifiTxBuffer, "D0=%s\r", hwifi->remoteIpAddress);
+	msgLength = sprintf(wifiTxBuffer, "D0=%s\r", hwifi->remoteAddress);
 	WIFI_SendATCommand(hwifi, wifiTxBuffer, msgLength+1, wifiRxBuffer, WIFI_RX_BUFFER_SIZE);
 
 	// Set read packet size

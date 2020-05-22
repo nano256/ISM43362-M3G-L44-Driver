@@ -112,7 +112,7 @@ typedef struct
   uint16_t port;
   uint16_t remotePort;
   char ipAddress[17];
-  char remoteIpAddress[17];
+  char remoteIpAddress[32];
   char networkMask[17];
   char defaultGateway[17];
   char primaryDNSServer[17];
@@ -130,6 +130,7 @@ WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
 WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_MQTTClientInit(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_MQTTPublish(WIFI_HandleTypeDef* hwifi, char* message, uint16_t sizeMessage);
 void trimstr(char* str, uint32_t strSize, char c);
 
 
