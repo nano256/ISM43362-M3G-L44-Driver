@@ -78,8 +78,27 @@ typedef enum
 
 typedef enum {
   WIFI_TCP_PROTOCOL = 0,
-  WIFI_UDP_PROTOCOL = 1,
+  WIFI_UDP_PROTOCOL,
+  WIFI_UDP_LITE_PROTOCOL,
+  WIFI_TCP_SSL_PROTOCOL,
+  WIFI_MQTT_PROTOCOL
 }WIFI_TransportProtocolTypeDef;
+
+typedef enum {
+  WIFI_MQTT_SECURITY_NONE = 0,
+  WIFI_MQTT_SECURITY_USER_PW,
+  WIFI_MQTT_SECURITY_CERT
+}WIFI_MQTTSecurityTypeDef;
+
+typedef struct{
+	char publishTopic[64];
+	char subscribeTopic[64];
+	WIFI_MQTTSecurityTypeDef securityMode;
+	char userName[32];
+	char password[32];
+	char clientId[24];
+	uint16_t keepAlive;
+} WIFI_MQTTTypeDef;
 
 typedef struct
 {
@@ -91,13 +110,14 @@ typedef struct
   WIFI_IPVersionTypeDef ipStatus;
   WIFI_TransportProtocolTypeDef transportProtocol;
   uint16_t port;
+  uint16_t remotePort;
   char ipAddress[17];
-  char RemoteIpAddress[17];
+  char remoteIpAddress[32];
   char networkMask[17];
   char defaultGateway[17];
   char primaryDNSServer[17];
+  WIFI_MQTTTypeDef mqtt;
 } WIFI_HandleTypeDef;
-
 
 /* Prototypes ----------------------------------------------------------------*/
 WIFI_StatusTypeDef WIFI_SPI_Receive(WIFI_HandleTypeDef* hwifi, char* buffer, uint16_t size);
@@ -109,7 +129,8 @@ WIFI_StatusTypeDef WIFI_WebServerInit(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerListen(WIFI_HandleTypeDef* hwifi);
 WIFI_StatusTypeDef WIFI_WebServerHandleRequest(WIFI_HandleTypeDef* hwifi, char* req, uint16_t sizeReq, char* res, uint16_t sizeRes);
 WIFI_StatusTypeDef WIFI_JoinNetwork(WIFI_HandleTypeDef* hwifi);
-
+WIFI_StatusTypeDef WIFI_MQTTClientInit(WIFI_HandleTypeDef* hwifi);
+WIFI_StatusTypeDef WIFI_MQTTPublish(WIFI_HandleTypeDef* hwifi, char* message, uint16_t sizeMessage);
 void trimstr(char* str, uint32_t strSize, char c);
 
 
